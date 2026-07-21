@@ -6,14 +6,33 @@ interface AvatarStoriesProps {
   stories: StoryItem[];
   characters: Character[];
   onSelectCharacter: (char: Character) => void;
+  isLoading?: boolean;
 }
 
 export const AvatarStories: React.FC<AvatarStoriesProps> = ({
   stories,
   characters,
   onSelectCharacter,
+  isLoading = false,
 }) => {
   const [activeStory, setActiveStory] = useState<StoryItem | null>(null);
+
+  if (isLoading) {
+    return (
+      <div className="w-full my-6">
+        <div className="flex items-center gap-4 overflow-x-auto pb-3 pt-1 scrollbar-none">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div key={idx} className="flex flex-col items-center gap-2 flex-shrink-0 animate-pulse">
+              <div className="p-0.5 rounded-full bg-[#22222a]">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1b1b22] border-2 border-[#22222a]" />
+              </div>
+              <div className="h-3 w-12 bg-[#22222a] rounded-full mt-1" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const handleOpenStory = (story: StoryItem) => {
     setActiveStory(story);

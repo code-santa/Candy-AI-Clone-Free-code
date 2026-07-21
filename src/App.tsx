@@ -22,6 +22,16 @@ import { INITIAL_CHARACTERS, AVATAR_STORIES, TANDY_SHORTS } from './data/charact
 export default function App() {
   const [activeCategory, setActiveCategory] = useState<Category>('Girls');
   const [activeTab, setActiveTab] = useState<TabType>('home');
+  const [isGridLoading, setIsGridLoading] = useState<boolean>(false);
+
+  const handleSelectCategory = (cat: Category) => {
+    if (cat === activeCategory) return;
+    setIsGridLoading(true);
+    setActiveCategory(cat);
+    setTimeout(() => {
+      setIsGridLoading(false);
+    }, 300);
+  };
 
   // Favorites in localStorage
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -157,7 +167,7 @@ export default function App() {
       {/* Top Header Navigation */}
       <Header
         activeCategory={activeCategory}
-        onSelectCategory={setActiveCategory}
+        onSelectCategory={handleSelectCategory}
         activeTab={activeTab}
         onNavigate={handleNavigate}
         onOpenAuth={() => setAuthModalOpen(true)}
@@ -208,6 +218,7 @@ export default function App() {
                 stories={AVATAR_STORIES}
                 characters={characters}
                 onSelectCharacter={handleSelectCharacter}
+                isLoading={isGridLoading}
               />
 
               {/* Character Grid with Search & Filters */}
@@ -222,6 +233,7 @@ export default function App() {
                 onNavigateToShorts={() => {
                   if (TANDY_SHORTS.length > 0) handleOpenShort(TANDY_SHORTS[0]);
                 }}
+                isLoading={isGridLoading}
               />
             </>
           )}

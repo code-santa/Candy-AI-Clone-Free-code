@@ -12,6 +12,7 @@ interface CharacterGridProps {
   shorts: ShortVideo[];
   onSelectShort: (short: ShortVideo) => void;
   onNavigateToShorts: () => void;
+  isLoading?: boolean;
 }
 
 const FILTER_TAGS: FilterTag[] = [
@@ -38,6 +39,7 @@ export const CharacterGrid: React.FC<CharacterGridProps> = ({
   shorts,
   onSelectShort,
   onNavigateToShorts,
+  isLoading = false,
 }) => {
   const [selectedTag, setSelectedTag] = useState<FilterTag>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,6 +66,57 @@ export const CharacterGrid: React.FC<CharacterGridProps> = ({
       return true;
     });
   }, [characters, activeCategory, searchQuery, selectedTag]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full my-6 space-y-6">
+        {/* Title Header Skeleton */}
+        <div className="space-y-2 animate-pulse">
+          <div className="h-8 w-64 bg-[#22222a] rounded-lg" />
+          <div className="h-4 w-96 max-w-full bg-[#1b1b22] rounded-lg" />
+        </div>
+
+        {/* Search Bar + Filter Tags Row Skeleton */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+          <div className="h-10 w-full md:w-72 bg-[#1b1b22] rounded-full border border-[#272730] animate-pulse" />
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-1 scrollbar-none">
+            {FILTER_TAGS.slice(0, 7).map((tag, idx) => (
+              <div
+                key={idx}
+                className="h-8 w-20 bg-[#1b1b22] border border-[#272730] rounded-full animate-pulse flex-shrink-0"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Cards Grid Skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {Array.from({ length: 8 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-[#16161a] border border-[#272730] rounded-2xl p-3 flex flex-col justify-between space-y-3 animate-pulse h-[340px] sm:h-[380px]"
+            >
+              <div className="w-full h-48 sm:h-56 bg-[#22222a] rounded-xl relative overflow-hidden">
+                <div className="absolute top-2 left-2 w-12 h-5 bg-[#2d2d38] rounded-full" />
+                <div className="absolute top-2 right-2 w-8 h-8 bg-[#2d2d38] rounded-full" />
+              </div>
+
+              <div className="space-y-2">
+                <div className="h-5 w-3/4 bg-[#22222a] rounded-md" />
+                <div className="h-3 w-full bg-[#1c1c24] rounded-md" />
+                <div className="h-3 w-4/5 bg-[#1c1c24] rounded-md" />
+              </div>
+
+              <div className="flex gap-1.5 pt-1">
+                <div className="h-5 w-14 bg-[#22222a] rounded-full" />
+                <div className="h-5 w-16 bg-[#22222a] rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full my-6 space-y-6">
