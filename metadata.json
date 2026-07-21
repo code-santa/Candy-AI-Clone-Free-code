@@ -1,0 +1,6 @@
+{
+  "name": "Tandy AI",
+  "description": "An interactive AI character platform with chat, character exploration, custom creation, voice, and media content.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
