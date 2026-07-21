@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { HeroBanner } from './components/HeroBanner';
@@ -22,9 +22,34 @@ import { INITIAL_CHARACTERS, AVATAR_STORIES, TANDY_SHORTS } from './data/charact
 export default function App() {
   const [activeCategory, setActiveCategory] = useState<Category>('Girls');
   const [activeTab, setActiveTab] = useState<TabType>('home');
-  const [characters, setCharacters] = useState<Character[]>(INITIAL_CHARACTERS);
+
+  // Favorites in localStorage
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('tandy_favorites');
+      return saved ? JSON.parse(saved) : ['roxy-1', 'sp00kybby-4'];
+    } catch (e) {
+      return ['roxy-1', 'sp00kybby-4'];
+    }
+  });
+
+  // Characters with custom characters loaded from localStorage
+  const [characters, setCharacters] = useState<Character[]>(() => {
+    try {
+      const savedCustom = localStorage.getItem('tandy_custom_characters');
+      if (savedCustom) {
+        const customList: Character[] = JSON.parse(savedCustom);
+        if (Array.isArray(customList) && customList.length > 0) {
+          return [...customList, ...INITIAL_CHARACTERS];
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load custom characters:', e);
+    }
+    return INITIAL_CHARACTERS;
+  });
+
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [favorites, setFavorites] = useState<string[]>(['roxy-1', 'sp00kybby-4']);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -33,8 +58,41 @@ export default function App() {
   const [shortsModalOpen, setShortsModalOpen] = useState(false);
   const [selectedShort, setSelectedShort] = useState<ShortVideo | null>(null);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState('');
+  // User auth state in localStorage
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('tandy_user_logged_in') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const [userName, setUserName] = useState<string>(() => {
+    try {
+      return localStorage.getItem('tandy_user_name') || '';
+    } catch (e) {
+      return '';
+    }
+  });
+
+  // Save favorites to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('tandy_favorites', JSON.stringify(favorites));
+    } catch (e) {
+      console.error('Failed to save favorites:', e);
+    }
+  }, [favorites]);
+
+  // Save auth state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('tandy_user_logged_in', String(isLoggedIn));
+      localStorage.setItem('tandy_user_name', userName);
+    } catch (e) {
+      console.error('Failed to save user auth state:', e);
+    }
+  }, [isLoggedIn, userName]);
 
   const handleSelectCharacter = (character: Character) => {
     setSelectedCharacter(character);
@@ -50,7 +108,17 @@ export default function App() {
   };
 
   const handleCreateCharacter = (newChar: Character) => {
-    setCharacters((prev) => [newChar, ...prev]);
+    setCharacters((prev) => {
+      const updated = [newChar, ...prev];
+      // Save custom characters to localStorage
+      try {
+        const customChars = updated.filter((c) => c.isCustom);
+        localStorage.setItem('tandy_custom_characters', JSON.stringify(customChars));
+      } catch (e) {
+        console.error('Failed to save custom character:', e);
+      }
+      return updated;
+    });
     setSelectedCharacter(newChar);
     setActiveTab('chat');
   };

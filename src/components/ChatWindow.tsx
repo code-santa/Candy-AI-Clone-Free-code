@@ -27,19 +27,32 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onBack,
   onOpenPremium,
 }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'msg-init',
-      characterId: character.id,
-      sender: 'character',
-      text: character.greetingMessage,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      emotion: 'happy',
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem(`tandy_chat_history_${character.id}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load chat history:', e);
+    }
+    return [
+      {
+        id: 'msg-init',
+        characterId: character.id,
+        sender: 'character',
+        text: character.greetingMessage,
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        emotion: 'happy',
+      },
+    ];
+  });
 
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -51,10 +64,120 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
-  const [relationshipScore, setRelationshipScore] = useState(45); // 0 to 100
+  const [relationshipScore, setRelationshipScore] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(`tandy_relationship_score_${character.id}`);
+      if (saved) {
+        const parsed = Number(saved);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load relationship score:', e);
+    }
+    return 45;
+  });
   const [showDetailsDrawer, setShowDetailsDrawer] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync state when character changes
+  useEffect(() => {
+    try {
+      const savedMsgs = localStorage.getItem(`tandy_chat_history_${character.id}`);
+      if (savedMsgs) {
+        const parsed = JSON.parse(savedMsgs);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        } else {
+          setMessages([
+            {
+              id: `msg-init-${Date.now()}`,
+              characterId: character.id,
+              sender: 'character',
+              text: character.greetingMessage,
+              timestamp: new Date().toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+              emotion: 'happy',
+            },
+          ]);
+        }
+      } else {
+        setMessages([
+          {
+            id: `msg-init-${Date.now()}`,
+            characterId: character.id,
+            sender: 'character',
+            text: character.greetingMessage,
+            timestamp: new Date().toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            emotion: 'happy',
+          },
+        ]);
+      }
+
+      const savedScore = localStorage.getItem(`tandy_relationship_score_${character.id}`);
+      if (savedScore) {
+        const parsed = Number(savedScore);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+          setRelationshipScore(parsed);
+        } else {
+          setRelationshipScore(45);
+        }
+      } else {
+        setRelationshipScore(45);
+      }
+    } catch (e) {
+      console.error('Error loading chat state from localStorage:', e);
+    }
+  }, [character.id, character.greetingMessage]);
+
+  // Save messages to local storage whenever messages update
+  useEffect(() => {
+    try {
+      localStorage.setItem(`tandy_chat_history_${character.id}`, JSON.stringify(messages));
+    } catch (e) {
+      console.error('Failed to save chat history:', e);
+    }
+  }, [messages, character.id]);
+
+  // Save relationship score to local storage
+  useEffect(() => {
+    try {
+      localStorage.setItem(`tandy_relationship_score_${character.id}`, String(relationshipScore));
+    } catch (e) {
+      console.error('Failed to save relationship score:', e);
+    }
+  }, [relationshipScore, character.id]);
+
+  const handleClearHistory = () => {
+    if (window.confirm(`Reset conversation history with ${character.name}?`)) {
+      const initialMsg: Message = {
+        id: `msg-init-${Date.now()}`,
+        characterId: character.id,
+        sender: 'character',
+        text: character.greetingMessage,
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        emotion: 'happy',
+      };
+      setMessages([initialMsg]);
+      setRelationshipScore(45);
+      try {
+        localStorage.removeItem(`tandy_chat_history_${character.id}`);
+        localStorage.removeItem(`tandy_relationship_score_${character.id}`);
+      } catch (e) {
+        console.error('Failed to clear history:', e);
+      }
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -289,6 +412,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               ) : (
                 <VolumeX className="w-5 h-5" />
               )}
+            </button>
+
+            <button
+              onClick={handleClearHistory}
+              className="p-2 rounded-full bg-[#1f1f26] hover:bg-[#282833] text-gray-300 hover:text-red-400 transition"
+              title="Reset Chat History"
+            >
+              <RotateCcw className="w-5 h-5" />
             </button>
 
             <button
