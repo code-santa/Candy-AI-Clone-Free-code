@@ -10,8 +10,8 @@
 
 ## 🚀 Live Demo & Source Code Download
 
-- 🌐 **Live Demo Site**: [https://cynonecodes.1987.ai/?project=candymate](https://cynonecodes.1987.ai/?project=candymate)
-- 📦 **Download Original Source Code**: [Get Full Candy AI Clone Source Code](https://cynonecodes.1987.ai/?project=candymate)
+- 🌐 **Live Demo Site**: [https://cynonecodes.1987.ai/?project=candymate](https://www.fiverr.com/s/emRl6d4)
+- 📦 **Download Original Source Code**: [Get Full Candy AI Clone Source Code](https://www.fiverr.com/s/emRl6d4)
 
 ---
 
@@ -21,7 +21,7 @@ Test administrative and premium subscription flows with our pre-configured admin
 
 | Parameter | Details |
 | :--- | :--- |
-| **Admin URL** | [https://candy.1987.ai/](https://candy.1987.ai/) |
+| **Admin URL** | [https://caddy.codlabs.dev/](https://caddy.codlabs.dev/) |
 | **Email** | `upgrade@upgrade.com` |
 | **Password** | `upgrade@upgrade.com` |
 
